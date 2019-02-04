@@ -28,9 +28,9 @@ void setScopeChannel(uint8_t ch, int16_t val) {
 }
 
 
-void send_serial_string(uint8_t *str){
-    // keith did this once already! grr  
 
+
+void send_serial_string(uint8_t *message){
     // #if defined DEBUG_SERIAL_KEITHTEXT && (defined DEBUG_SERIAL_USART2 || defined DEBUG_SERIAL_USART3)
     //     uart_buf[0] = 0x42;
     //     uart_buf[1] = 0x43;
@@ -43,17 +43,19 @@ void send_serial_string(uint8_t *str){
     //     }
     // #endif 
 
-    memset(uart_buf, 0, sizeof(uart_buf)); //clear buffer with zeros 
-    sprintf(uart_buf, "1:%i 2:%i 3:%i 4:%i 5:%i 6:%i 7:%i 8:%i\r\n", ch_buf[0], ch_buf[1], ch_buf[2], ch_buf[3], ch_buf[4], ch_buf[5], ch_buf[6], ch_buf[7]);
 
+    // from the osx machine at work  
+    #if defined DEBUG_SERIAL_ASCII && (defined DEBUG_SERIAL_USART2 || defined DEBUG_SERIAL_USART3)
+      memset(message, 0, sizeof(message));
+      sprintf(message, "1:%i 2:%i 3:%i 4:%i 5:%i 6:%i 7:%i 8:%i\r\n", ch_buf[0], ch_buf[1], ch_buf[2], ch_buf[3], ch_buf[4], ch_buf[5], ch_buf[6], ch_buf[7]);
 
-    if(UART_DMA_CHANNEL->CNDTR == 0) 
-    {
+      if(UART_DMA_CHANNEL->CNDTR == 0) {
         UART_DMA_CHANNEL->CCR &= ~DMA_CCR_EN;
-        UART_DMA_CHANNEL->CNDTR = strlen(uart_buf);
-        UART_DMA_CHANNEL->CMAR  = (uint32_t)uart_buf;
+        UART_DMA_CHANNEL->CNDTR = strlen(message);
+        UART_DMA_CHANNEL->CMAR  = (uint32_t)message;
         UART_DMA_CHANNEL->CCR |= DMA_CCR_EN;
-    }
+      }
+    #endif
 
 }
 
