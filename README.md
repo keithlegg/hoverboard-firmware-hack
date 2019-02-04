@@ -1,8 +1,10 @@
 # hoverboard-firmware-hack
 
-![](https://raw.githubusercontent.com/NiklasFauth/hoverboard-firmware-hack/master/docs/pictures/armchair.gif)   ![](https://raw.githubusercontent.com/NiklasFauth/hoverboard-firmware-hack/master/docs/pictures/bobbycar.gif)
-![](https://raw.githubusercontent.com/NiklasFauth/hoverboard-firmware-hack/master/docs/pictures/transpotter.gif)   ![](https://raw.githubusercontent.com/NiklasFauth/hoverboard-firmware-hack/master/docs/pictures/chair.gif)
 
+This is my own personal fork of the wonderful "hoverboard hack" from Niklas Fauth. 
+You should probably go there to get the code. No telling what I may have done to it. 
+
+-- Oringial doc below -- 
 
 This repo contains open source firmware for generic Hoverboard Mainboards.
 The firmware you can find here allows you to use your Hoverboard Hardware (like the Mainboard, Motors and Battery) for cool projects like driving armchairs, person-tracking transportation robots and every other application you can imagine that requires controlling the Motors.
