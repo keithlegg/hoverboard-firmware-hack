@@ -7,10 +7,13 @@
 
 UART_HandleTypeDef huart2;
 
+
+// left sensor board cable ?
 #ifdef DEBUG_SERIAL_USART3
 #define UART_DMA_CHANNEL DMA1_Channel2
 #endif
 
+// right sensor board cable ?
 #ifdef DEBUG_SERIAL_USART2
 #define UART_DMA_CHANNEL DMA1_Channel7
 #endif
@@ -23,6 +26,38 @@ volatile int16_t ch_buf[8];
 void setScopeChannel(uint8_t ch, int16_t val) {
   ch_buf[ch] = val;
 }
+
+
+void send_serial_string(uint8_t *str){
+    // keith did this once already! grr  
+
+    // #if defined DEBUG_SERIAL_KEITHTEXT && (defined DEBUG_SERIAL_USART2 || defined DEBUG_SERIAL_USART3)
+    //     uart_buf[0] = 0x42;
+    //     uart_buf[1] = 0x43;
+    //     uart_buf[2] = 0x44;
+    //     if(UART_DMA_CHANNEL->CNDTR == 0) {
+    //         UART_DMA_CHANNEL->CCR &= ~DMA_CCR_EN;
+    //         UART_DMA_CHANNEL->CNDTR = 10;
+    //         UART_DMA_CHANNEL->CMAR  = (uint32_t)uart_buf;
+    //         UART_DMA_CHANNEL->CCR |= DMA_CCR_EN;
+    //     }
+    // #endif 
+
+    memset(uart_buf, 0, sizeof(uart_buf)); //clear buffer with zeros 
+    sprintf(uart_buf, "1:%i 2:%i 3:%i 4:%i 5:%i 6:%i 7:%i 8:%i\r\n", ch_buf[0], ch_buf[1], ch_buf[2], ch_buf[3], ch_buf[4], ch_buf[5], ch_buf[6], ch_buf[7]);
+
+
+    if(UART_DMA_CHANNEL->CNDTR == 0) 
+    {
+        UART_DMA_CHANNEL->CCR &= ~DMA_CCR_EN;
+        UART_DMA_CHANNEL->CNDTR = strlen(uart_buf);
+        UART_DMA_CHANNEL->CMAR  = (uint32_t)uart_buf;
+        UART_DMA_CHANNEL->CCR |= DMA_CCR_EN;
+    }
+
+}
+
+
 
 void consoleScope() {
   #if defined DEBUG_SERIAL_SERVOTERM && (defined DEBUG_SERIAL_USART2 || defined DEBUG_SERIAL_USART3)

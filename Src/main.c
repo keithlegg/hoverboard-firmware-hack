@@ -89,6 +89,26 @@ void poweroff() {
     }
 }
 
+void play_sweep_tune(int steps, int speed){
+    int k = 0;
+    for (k=0;k<steps;k++){
+      buzzerFreq = k;
+      HAL_Delay(speed);
+    }
+    for (k=steps;k>0;k--){
+      buzzerFreq = k;
+      HAL_Delay(speed);
+    } 
+
+}
+
+void play_tune(void){
+    play_sweep_tune(100, 10);
+    play_sweep_tune(20, 20 );
+    play_sweep_tune(20, 30 );
+    buzzerFreq = 0;
+    buzzerPattern = 0;
+}
 
 int main(void) {
   HAL_Init();
@@ -180,9 +200,25 @@ int main(void) {
 
   enable = 1;  // enable motors
 
+
+  play_tune();
+
+
+
   while(1) {
     HAL_Delay(DELAY_IN_MAIN_LOOP); //delay in ms
+   
 
+    //send_serial_string("");
+    //HAL_Delay(100);
+
+    /////////// 
+
+
+
+    ///////////
+
+    /*
     #ifdef CONTROL_NUNCHUCK
       Nunchuck_Read();
       cmd1 = CLAMP((nunchuck_data[0] - 127) * 8, -1000, 1000); // x - axis. Nunchuck joystick readings range 30 - 230
@@ -310,6 +346,7 @@ int main(void) {
     if (inactivity_timeout_counter > (INACTIVITY_TIMEOUT * 60 * 1000) / (DELAY_IN_MAIN_LOOP + 1)) {  // rest of main loop needs maybe 1ms
       poweroff();
     }
+    */
   }
 }
 
