@@ -201,22 +201,16 @@ int main(void) {
   enable = 1;  // enable motors
 
 
-  play_tune();
-
-
+  //play_tune();
 
   while(1) {
     HAL_Delay(DELAY_IN_MAIN_LOOP); //delay in ms
    
+  
+    //test of UART transmit 
+    //send_serial_string("hello universe!\r\n");
+    //HAL_Delay(1000);
 
-    //send_serial_string("");
-    //HAL_Delay(100);
-
-    /////////// 
-
-
-
-    ///////////
 
     /*
     #ifdef CONTROL_NUNCHUCK

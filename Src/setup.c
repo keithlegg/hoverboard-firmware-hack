@@ -26,8 +26,8 @@ adc1,adc2 triggered by tim8 trgo
 adc 1,2 dual mode
 
 ADC1             ADC2
-R_Blau PC4 CH14  R_Gelb PC5 CH15
-L_Grün PA0 CH01  L_Blau PC3 CH13
+R_Blue PC4 CH14  R_Yellow PC5 CH15
+L_Green PA0 CH01  L_Blue PC3 CH13
 R_DC PC1 CH11    L_DC PC0 CH10
 BAT   PC2 CH12   L_TX PA2 CH02
 BAT   PC2 CH12   L_RX PA3 CH03
