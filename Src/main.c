@@ -110,98 +110,14 @@ void play_tune(void){
     buzzerPattern = 0;
 }
 
-int main(void) {
-  HAL_Init();
-  __HAL_RCC_AFIO_CLK_ENABLE();
-  HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
-  /* System interrupt init*/
-  /* MemoryManagement_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(MemoryManagement_IRQn, 0, 0);
-  /* BusFault_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(BusFault_IRQn, 0, 0);
-  /* UsageFault_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(UsageFault_IRQn, 0, 0);
-  /* SVCall_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SVCall_IRQn, 0, 0);
-  /* DebugMonitor_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DebugMonitor_IRQn, 0, 0);
-  /* PendSV_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(PendSV_IRQn, 0, 0);
-  /* SysTick_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
-
-  SystemClock_Config();
-
-  __HAL_RCC_DMA1_CLK_DISABLE();
-  MX_GPIO_Init();
-  MX_TIM_Init();
-  MX_ADC1_Init();
-  MX_ADC2_Init();
-
-  #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
-    UART_Init();
-  #endif
-
-  HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, 1);
-
-  HAL_ADC_Start(&hadc1);
-  HAL_ADC_Start(&hadc2);
-
-  for (int i = 8; i >= 0; i--) {
-    buzzerFreq = i;
-    HAL_Delay(100);
-  }
-  buzzerFreq = 0;
-
-  HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
+void normal_runloop(void){
 
   int lastSpeedL = 0, lastSpeedR = 0;
   int speedL = 0, speedR = 0;
   float direction = 1;
 
-  #ifdef CONTROL_PPM
-    PPM_Init();
-  #endif
-
-  #ifdef CONTROL_NUNCHUCK
-    I2C_Init();
-    Nunchuck_Init();
-  #endif
-
-  #ifdef CONTROL_SERIAL_USART2
-    UART_Control_Init();
-    HAL_UART_Receive_DMA(&huart2, (uint8_t *)&command, 4);
-  #endif
-
-  #ifdef DEBUG_I2C_LCD
-    I2C_Init();
-    HAL_Delay(50);
-    lcd.pcf8574.PCF_I2C_ADDRESS = 0x27;
-      lcd.pcf8574.PCF_I2C_TIMEOUT = 5;
-      lcd.pcf8574.i2c = hi2c2;
-      lcd.NUMBER_OF_LINES = NUMBER_OF_LINES_2;
-      lcd.type = TYPE0;
-
-      if(LCD_Init(&lcd)!=LCD_OK){
-          // error occured
-          //TODO while(1);
-      }
-
-    LCD_ClearDisplay(&lcd);
-    HAL_Delay(5);
-    LCD_SetLocation(&lcd, 0, 0);
-    LCD_WriteString(&lcd, "Hover V2.0");
-    LCD_SetLocation(&lcd, 0, 1);
-    LCD_WriteString(&lcd, "Initializing...");
-  #endif
-
   float board_temp_adc_filtered = (float)adc_buffer.temp;
   float board_temp_deg_c;
-
-  enable = 1;  // enable motors
-
-
-  //play_tune();
 
   while(1) {
     HAL_Delay(DELAY_IN_MAIN_LOOP); //delay in ms
@@ -211,6 +127,21 @@ int main(void) {
     //send_serial_string("hello universe!\r\n");
     //HAL_Delay(1000);
 
+
+    /**********************/
+    
+    //ramp up motors as a test 
+    if(cmd1<1000){
+        cmd1=cmd1+1.0f;
+    }   
+    cmd2 = 0.0f;  //CLAMP(adc_buffer.l_rx2 - ADC2_MIN, 0, ADC2_MAX) / (ADC2_MAX / 1000.0f);  // ADC2
+
+    button1 = 1; 
+    button2 = 1; 
+
+    timeout = 0;
+   
+    /**********************/
 
     /*
     #ifdef CONTROL_NUNCHUCK
@@ -247,22 +178,19 @@ int main(void) {
 
       timeout = 0;
     #endif
-
+    */
 
     // ####### LOW-PASS FILTER #######
     steer = steer * (1.0 - FILTER) + cmd1 * FILTER;
     speed = speed * (1.0 - FILTER) + cmd2 * FILTER;
 
-
     // ####### MIXER #######
     speedR = CLAMP(speed * SPEED_COEFFICIENT -  steer * STEER_COEFFICIENT, -1000, 1000);
     speedL = CLAMP(speed * SPEED_COEFFICIENT +  steer * STEER_COEFFICIENT, -1000, 1000);
 
-
     #ifdef ADDITIONAL_CODE
       ADDITIONAL_CODE;
     #endif
-
 
     // ####### SET OUTPUTS #######
     if ((speedL < lastSpeedL + 50 && speedL > lastSpeedL - 50) && (speedR < lastSpeedR + 50 && speedR > lastSpeedR - 50) && timeout < TIMEOUT) {
@@ -280,7 +208,6 @@ int main(void) {
 
     lastSpeedL = speedL;
     lastSpeedR = speedR;
-
 
     if (inactivity_timeout_counter % 25 == 0) {
       // ####### CALC BOARD TEMPERATURE #######
@@ -340,8 +267,107 @@ int main(void) {
     if (inactivity_timeout_counter > (INACTIVITY_TIMEOUT * 60 * 1000) / (DELAY_IN_MAIN_LOOP + 1)) {  // rest of main loop needs maybe 1ms
       poweroff();
     }
-    */
+   
   }
+
+}
+
+int main(void) {
+  HAL_Init();
+  __HAL_RCC_AFIO_CLK_ENABLE();
+  HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+  /* System interrupt init*/
+  /* MemoryManagement_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(MemoryManagement_IRQn, 0, 0);
+  /* BusFault_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(BusFault_IRQn, 0, 0);
+  /* UsageFault_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(UsageFault_IRQn, 0, 0);
+  /* SVCall_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(SVCall_IRQn, 0, 0);
+  /* DebugMonitor_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DebugMonitor_IRQn, 0, 0);
+  /* PendSV_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(PendSV_IRQn, 0, 0);
+  /* SysTick_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+
+  SystemClock_Config();
+
+  __HAL_RCC_DMA1_CLK_DISABLE();
+  MX_GPIO_Init();
+  MX_TIM_Init();
+  MX_ADC1_Init();
+  MX_ADC2_Init();
+
+  #if defined(DEBUG_SERIAL_USART2) || defined(DEBUG_SERIAL_USART3)
+    UART_Init();
+  #endif
+
+  HAL_GPIO_WritePin(OFF_PORT, OFF_PIN, 1);
+
+  HAL_ADC_Start(&hadc1);
+  HAL_ADC_Start(&hadc2);
+
+  for (int i = 8; i >= 0; i--) {
+    buzzerFreq = i;
+    HAL_Delay(100);
+  }
+  buzzerFreq = 0;
+
+  HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
+
+ // int lastSpeedL = 0, lastSpeedR = 0;
+ // int speedL = 0, speedR = 0;
+ // float direction = 1;
+
+  #ifdef CONTROL_PPM
+    PPM_Init();
+  #endif
+
+  #ifdef CONTROL_NUNCHUCK
+    I2C_Init();
+    Nunchuck_Init();
+  #endif
+
+  #ifdef CONTROL_SERIAL_USART2
+    UART_Control_Init();
+    HAL_UART_Receive_DMA(&huart2, (uint8_t *)&command, 4);
+  #endif
+
+  #ifdef DEBUG_I2C_LCD
+    I2C_Init();
+    HAL_Delay(50);
+    lcd.pcf8574.PCF_I2C_ADDRESS = 0x27;
+      lcd.pcf8574.PCF_I2C_TIMEOUT = 5;
+      lcd.pcf8574.i2c = hi2c2;
+      lcd.NUMBER_OF_LINES = NUMBER_OF_LINES_2;
+      lcd.type = TYPE0;
+
+      if(LCD_Init(&lcd)!=LCD_OK){
+          // error occured
+          //TODO while(1);
+      }
+
+    LCD_ClearDisplay(&lcd);
+    HAL_Delay(5);
+    LCD_SetLocation(&lcd, 0, 0);
+    LCD_WriteString(&lcd, "Hover V2.0");
+    LCD_SetLocation(&lcd, 0, 1);
+    LCD_WriteString(&lcd, "Initializing...");
+  #endif
+
+ // float board_temp_adc_filtered = (float)adc_buffer.temp;
+ // float board_temp_deg_c;
+
+  enable = 1;  // enable motors
+
+
+  //play_tune();
+
+  normal_runloop();
+
+
 }
 
 /** System Clock Configuration
