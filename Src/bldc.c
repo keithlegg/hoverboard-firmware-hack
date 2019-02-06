@@ -155,6 +155,7 @@ volatile int vel = 0;
     uint8_t hall_wl = 0;
 
     int keith_phase_count = 0;
+    int crnt = 50;
 
 
     void DMA1_Channel1_IRQHandler() {
@@ -166,8 +167,8 @@ volatile int vel = 0;
       if (buzzerTimer % 1000 == 0) {  // because you get float rounding errors if it would run every time
         batteryVoltage = batteryVoltage * 0.99 + ((float)adc_buffer.batt1 * ((float)BAT_CALIB_REAL_VOLTAGE / (float)BAT_CALIB_ADC)) * 0.01;
         
-        //simple stupid "3 states" machine
-        if (keith_phase_count==3){
+        //simple stupid "5 states" machine
+        if (keith_phase_count==6){
           keith_phase_count = 0;
         }else{
             keith_phase_count++;
@@ -238,22 +239,37 @@ volatile int vel = 0;
       //RIGHT_TIM->RIGHT_TIM_V = CLAMP(vr + pwm_res / 2, 10, pwm_res-10);
       //RIGHT_TIM->RIGHT_TIM_W = CLAMP(wr + pwm_res / 2, 10, pwm_res-10);
 
-  
       if (keith_phase_count==0){
-          LEFT_TIM->LEFT_TIM_U = CLAMP(30 + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_V = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_W = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_U = CLAMP(0      + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
       }
       if (keith_phase_count==1){
-          LEFT_TIM->LEFT_TIM_U = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_V = CLAMP(30 + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_W = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_U = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V = CLAMP(crnt     + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W = CLAMP(0      + pwm_res / 2, 10, pwm_res-10);
       }
       if (keith_phase_count==2){
-          LEFT_TIM->LEFT_TIM_U = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_V = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_W = CLAMP(30 + pwm_res / 2, 10, pwm_res-10);
-      }      
+          LEFT_TIM->LEFT_TIM_U = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V = CLAMP(0      + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
+      }    
+      if (keith_phase_count==3){
+          LEFT_TIM->LEFT_TIM_U = CLAMP(0     + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V = CLAMP(crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W = CLAMP(-crnt + pwm_res / 2, 10, pwm_res-10);
+      } 
+      if (keith_phase_count==4){
+          LEFT_TIM->LEFT_TIM_U = CLAMP(crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V = CLAMP(-crnt + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W = CLAMP(0     + pwm_res / 2, 10, pwm_res-10);
+      } 
+      if (keith_phase_count==5){
+          LEFT_TIM->LEFT_TIM_U = CLAMP(crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V = CLAMP(0     + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W = CLAMP(-crnt + pwm_res / 2, 10, pwm_res-10);
+      } 
+      
     }
 #endif 
 
