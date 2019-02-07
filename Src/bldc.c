@@ -145,6 +145,123 @@ volatile int vel = 0;
 
 
 
+
+ 
+#ifdef KEITH_RUN_DCBRUSHED_TEST
+
+    // HERE THERE BE DRAGONS!!
+
+    //determine next position based on hall sensors
+    uint8_t hall_ul = 0;
+    uint8_t hall_vl = 0;
+    uint8_t hall_wl = 0;
+
+    int keith_phase_count = 0;
+    int crnt = 10;
+
+
+    void DMA1_Channel1_IRQHandler() {
+      DMA1->IFCR = DMA_IFCR_CTCIF1;
+      // HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
+
+      buzzerTimer++; //also used for ADC / battery voltage checks
+
+      //create square wave for buzzer
+      if (buzzerFreq != 0 && (buzzerTimer / 5000) % (buzzerPattern + 1) == 0) {
+        if (buzzerTimer % buzzerFreq == 0) {
+          HAL_GPIO_TogglePin(BUZZER_PORT, BUZZER_PIN);
+        }
+      } else {
+          HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, 0);
+      }
+
+      if (buzzerTimer % 1000 == 0) {  // because you get float rounding errors if it would run every time
+        batteryVoltage = batteryVoltage * 0.99 + ((float)adc_buffer.batt1 * ((float)BAT_CALIB_REAL_VOLTAGE / (float)BAT_CALIB_ADC)) * 0.01;
+      }
+
+
+      if (buzzerTimer % 1000 == 0) {
+
+        // count to 2 over and over 
+        if (keith_phase_count==2){
+          keith_phase_count = 0;
+        }else{
+            keith_phase_count++;
+        }
+      
+      }
+
+      if(offsetcount < 1000) {  // calibrate ADC offsets
+        offsetcount++;
+        offsetrl1 = (adc_buffer.rl1 + offsetrl1) / 2;
+        offsetrl2 = (adc_buffer.rl2 + offsetrl2) / 2;
+        offsetrr1 = (adc_buffer.rr1 + offsetrr1) / 2;
+        offsetrr2 = (adc_buffer.rr2 + offsetrr2) / 2;
+        offsetdcl = (adc_buffer.dcl + offsetdcl) / 2;
+        offsetdcr = (adc_buffer.dcr + offsetdcr) / 2;
+        return;
+      }
+
+      //disable PWM when current limit is reached (current chopping)
+      if(ABS((adc_buffer.dcl - offsetdcl) * MOTOR_AMP_CONV_DC_AMP) > DC_CUR_LIMIT || timeout > TIMEOUT || enable == 0) {
+        LEFT_TIM->BDTR &= ~TIM_BDTR_MOE;
+        //HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
+      } else {
+        LEFT_TIM->BDTR |= TIM_BDTR_MOE;
+        //HAL_GPIO_WritePin(LED_PORT, LED_PIN, 0);
+      }
+      if(ABS((adc_buffer.dcr - offsetdcr) * MOTOR_AMP_CONV_DC_AMP)  > DC_CUR_LIMIT || timeout > TIMEOUT || enable == 0) {
+        RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;
+      } else {
+        RIGHT_TIM->BDTR |= TIM_BDTR_MOE;
+      }
+
+
+      //disable right motor 
+      RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;
+
+      if (keith_phase_count==0){
+          LEFT_TIM->LEFT_TIM_U = CLAMP(0      + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
+      }
+      if (keith_phase_count==1){
+          LEFT_TIM->LEFT_TIM_U = CLAMP(0      + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
+      }
+      /*
+      if (keith_phase_count==2){
+          LEFT_TIM->LEFT_TIM_U = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V = CLAMP(0      + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
+      }    
+      if (keith_phase_count==3){
+          LEFT_TIM->LEFT_TIM_U = CLAMP(0     + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V = CLAMP(crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W = CLAMP(-crnt + pwm_res / 2, 10, pwm_res-10);
+      } 
+      if (keith_phase_count==4){
+          LEFT_TIM->LEFT_TIM_U = CLAMP(crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V = CLAMP(-crnt + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W = CLAMP(0     + pwm_res / 2, 10, pwm_res-10);
+      } 
+      if (keith_phase_count==5){
+          LEFT_TIM->LEFT_TIM_U = CLAMP(crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V = CLAMP(0     + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W = CLAMP(-crnt + pwm_res / 2, 10, pwm_res-10);
+      } */
+
+
+      
+    }
+
+#endif 
+
+
+/********************************************************/
+
+
 #ifdef KEITH_RUN_NO_HALLSENSORS
 
     // HERE THERE BE DRAGONS!!
@@ -155,7 +272,7 @@ volatile int vel = 0;
     uint8_t hall_wl = 0;
 
     int keith_phase_count = 0;
-    int crnt = 50;
+    int crnt = 20;
 
 
     void DMA1_Channel1_IRQHandler() {
@@ -164,16 +281,32 @@ volatile int vel = 0;
 
       buzzerTimer++; //also used for ADC / battery voltage checks
 
+      //create square wave for buzzer
+      if (buzzerFreq != 0 && (buzzerTimer / 5000) % (buzzerPattern + 1) == 0) {
+        if (buzzerTimer % buzzerFreq == 0) {
+          HAL_GPIO_TogglePin(BUZZER_PORT, BUZZER_PIN);
+        }
+      } else {
+          HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, 0);
+      }
+
       if (buzzerTimer % 1000 == 0) {  // because you get float rounding errors if it would run every time
         batteryVoltage = batteryVoltage * 0.99 + ((float)adc_buffer.batt1 * ((float)BAT_CALIB_REAL_VOLTAGE / (float)BAT_CALIB_ADC)) * 0.01;
-        
-        //simple stupid "5 states" machine
+      }
+
+
+      if (buzzerTimer % 100 == 0) {
+
+        // count to 8 over and over 
         if (keith_phase_count==6){
           keith_phase_count = 0;
         }else{
             keith_phase_count++;
         }
+      
       }
+
+
 
       if(offsetcount < 1000) {  // calibrate ADC offsets
         offsetcount++;
@@ -196,7 +329,6 @@ volatile int vel = 0;
         LEFT_TIM->BDTR |= TIM_BDTR_MOE;
         //HAL_GPIO_WritePin(LED_PORT, LED_PIN, 0);
       }
-
       if(ABS((adc_buffer.dcr - offsetdcr) * MOTOR_AMP_CONV_DC_AMP)  > DC_CUR_LIMIT || timeout > TIMEOUT || enable == 0) {
         RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;
       } else {
@@ -225,20 +357,24 @@ volatile int vel = 0;
       //posr += 2;
       //posr %= 6;
 
+
       //blockPhaseCurrent(posl, adc_buffer.rl1 - offsetrl1, adc_buffer.rl2 - offsetrl2, &curl);
 
       //update PWM channels based on position
       //blockPWM(pwml, posl, &ul, &vl, &wl);
       //blockPWM(pwmr, posr, &ur, &vr, &wr);
 
-      //LEFT_TIM->LEFT_TIM_U = CLAMP(ul + pwm_res / 2, 10, pwm_res-10);
-      //LEFT_TIM->LEFT_TIM_V = CLAMP(vl + pwm_res / 2, 10, pwm_res-10);
-      //LEFT_TIM->LEFT_TIM_W = CLAMP(wl + pwm_res / 2, 10, pwm_res-10);
+      blockPWM(pwml, keith_phase_count, &ul, &vl, &wl); //keith was here
+
+      LEFT_TIM->LEFT_TIM_U = CLAMP(ul + pwm_res / 2, 10, pwm_res-10);
+      LEFT_TIM->LEFT_TIM_V = CLAMP(vl + pwm_res / 2, 10, pwm_res-10);
+      LEFT_TIM->LEFT_TIM_W = CLAMP(wl + pwm_res / 2, 10, pwm_res-10);
 
       //RIGHT_TIM->RIGHT_TIM_U = CLAMP(ur + pwm_res / 2, 10, pwm_res-10);
       //RIGHT_TIM->RIGHT_TIM_V = CLAMP(vr + pwm_res / 2, 10, pwm_res-10);
       //RIGHT_TIM->RIGHT_TIM_W = CLAMP(wr + pwm_res / 2, 10, pwm_res-10);
 
+      /*
       if (keith_phase_count==0){
           LEFT_TIM->LEFT_TIM_U = CLAMP(0      + pwm_res / 2, 10, pwm_res-10);
           LEFT_TIM->LEFT_TIM_V = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
@@ -269,13 +405,14 @@ volatile int vel = 0;
           LEFT_TIM->LEFT_TIM_V = CLAMP(0     + pwm_res / 2, 10, pwm_res-10);
           LEFT_TIM->LEFT_TIM_W = CLAMP(-crnt + pwm_res / 2, 10, pwm_res-10);
       } 
+      */
       
     }
 #endif 
 
 
-#ifndef KEITH_RUN_NO_HALLSENSORS
-
+#ifdef NORMAL_BLDC_RUNMODE  
+   
     //scan 8 channels with 2ADCs @ 20 clk cycles per sample
     //meaning ~80 ADC clock cycles @ 8MHz until new DMA interrupt =~ 100KHz
     //=640 cpu cycles
@@ -410,6 +547,7 @@ volatile int vel = 0;
       RIGHT_TIM->RIGHT_TIM_V = CLAMP(vr + pwm_res / 2, 10, pwm_res-10);
       RIGHT_TIM->RIGHT_TIM_W = CLAMP(wr + pwm_res / 2, 10, pwm_res-10);
     }
+
 
 #endif 
 

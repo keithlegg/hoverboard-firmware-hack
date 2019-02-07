@@ -23,6 +23,7 @@
 #include "defines.h"
 #include "setup.h"
 #include "config.h"
+
 //#include "hd44780.h"
 
 void SystemClock_Config(void);
@@ -109,6 +110,21 @@ void play_tune(void){
     buzzerFreq = 0;
     buzzerPattern = 0;
 }
+
+
+
+void read_hall_senors(){
+
+      uint8_t hall_ul = !(LEFT_HALL_U_PORT->IDR & LEFT_HALL_U_PIN);
+      uint8_t hall_vl = !(LEFT_HALL_V_PORT->IDR & LEFT_HALL_V_PIN);
+      uint8_t hall_wl = !(LEFT_HALL_W_PORT->IDR & LEFT_HALL_W_PIN);
+
+      uint8_t hall_ur = !(RIGHT_HALL_U_PORT->IDR & RIGHT_HALL_U_PIN);
+      uint8_t hall_vr = !(RIGHT_HALL_V_PORT->IDR & RIGHT_HALL_V_PIN);
+      uint8_t hall_wr = !(RIGHT_HALL_W_PORT->IDR & RIGHT_HALL_W_PIN);
+
+}
+
 
 void normal_runloop(void){
 
