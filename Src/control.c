@@ -17,6 +17,7 @@ extern I2C_HandleTypeDef hi2c2;
 DMA_HandleTypeDef hdma_i2c2_rx;
 DMA_HandleTypeDef hdma_i2c2_tx;
 
+
 #ifdef CONTROL_PPM
 uint16_t ppm_captured_value[PPM_NUM_CHANNELS + 1] = {500, 500};
 uint16_t ppm_captured_value_buffer[PPM_NUM_CHANNELS+1] = {500, 500};
@@ -83,6 +84,7 @@ void PPM_Init() {
   HAL_TIM_Base_Start(&TimHandle);
 }
 #endif
+
 
 void Nunchuck_Init() {
     //-- START -- init WiiNunchuck

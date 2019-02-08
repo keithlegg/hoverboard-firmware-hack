@@ -145,6 +145,36 @@ volatile int vel = 0;
 
 
 
+/*
+
+NOTES:
+
+    #DISABLE LEFT MOTOR :
+        
+        LEFT_TIM->BDTR &= ~TIM_BDTR_MOE;
+
+
+    #DISABLE RIGHT MOTOR :
+
+        RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;
+
+
+    --------------------------------
+    #PIN MAPPINGS - 
+        You can run a biderectional Bridge through ANY two pins !!
+        a total of 3 independent DC motors!
+    
+    LEFT :
+        GREEN  - LEFT_TIM_U
+        BLUE   - LEFT_TIM_V 
+        YELLOW - LEFT_TIM_W 
+
+    RIGHT :
+        GREEN   - RIGHT_TIM_U
+        BLUE    - RIGHT_TIM_V
+        YELLOW  - RIGHT_TIM_W
+
+*/
 
  
 #ifdef KEITH_RUN_DCBRUSHED_TEST
@@ -157,12 +187,16 @@ volatile int vel = 0;
     uint8_t hall_wl = 0;
 
     int keith_phase_count = 0;
-    int crnt = 10;
+    int crnt = 100;
 
 
     void DMA1_Channel1_IRQHandler() {
       DMA1->IFCR = DMA_IFCR_CTCIF1;
       // HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
+
+      // DISABLE RIGHT MOTOR FOR TESTING
+      //RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;  
+
 
       buzzerTimer++; //also used for ADC / battery voltage checks
 
@@ -180,16 +214,17 @@ volatile int vel = 0;
       }
 
 
-      if (buzzerTimer % 1000 == 0) {
-
-        // count to 2 over and over 
-        if (keith_phase_count==2){
+      if (buzzerTimer % 2000 == 0) {
+        // count to 5 over and over 
+        if (keith_phase_count==4){
           keith_phase_count = 0;
         }else{
             keith_phase_count++;
         }
       
       }
+
+
 
       if(offsetcount < 1000) {  // calibrate ADC offsets
         offsetcount++;
@@ -202,7 +237,9 @@ volatile int vel = 0;
         return;
       }
 
-      //disable PWM when current limit is reached (current chopping)
+
+
+      //disable left PWM when current limit is reached (current chopping)
       if(ABS((adc_buffer.dcl - offsetdcl) * MOTOR_AMP_CONV_DC_AMP) > DC_CUR_LIMIT || timeout > TIMEOUT || enable == 0) {
         LEFT_TIM->BDTR &= ~TIM_BDTR_MOE;
         //HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
@@ -210,50 +247,43 @@ volatile int vel = 0;
         LEFT_TIM->BDTR |= TIM_BDTR_MOE;
         //HAL_GPIO_WritePin(LED_PORT, LED_PIN, 0);
       }
+      //disable right PWM when current limit is reached (current chopping)      
       if(ABS((adc_buffer.dcr - offsetdcr) * MOTOR_AMP_CONV_DC_AMP)  > DC_CUR_LIMIT || timeout > TIMEOUT || enable == 0) {
         RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;
       } else {
         RIGHT_TIM->BDTR |= TIM_BDTR_MOE;
       }
 
-
-      //disable right motor 
-      RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;
-
+ 
+      // TEST OF RUNNING DC MOTORS THROUGH VARIOUS WIRES 
       if (keith_phase_count==0){
-          LEFT_TIM->LEFT_TIM_U = CLAMP(0      + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_V = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_W = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_U   = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V   = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W   = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_U = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_V = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_W = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+
       }
       if (keith_phase_count==1){
-          LEFT_TIM->LEFT_TIM_U = CLAMP(0      + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_V = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_W = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W  = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_W = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
       }
-      /*
       if (keith_phase_count==2){
-          LEFT_TIM->LEFT_TIM_U = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_V = CLAMP(0      + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_W = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_U = CLAMP(0   + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V = CLAMP(0   + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W = CLAMP(0   + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_U = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_V = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_W = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+
       }    
       if (keith_phase_count==3){
-          LEFT_TIM->LEFT_TIM_U = CLAMP(0     + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_V = CLAMP(crnt  + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_W = CLAMP(-crnt + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_W = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
       } 
-      if (keith_phase_count==4){
-          LEFT_TIM->LEFT_TIM_U = CLAMP(crnt  + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_V = CLAMP(-crnt + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_W = CLAMP(0     + pwm_res / 2, 10, pwm_res-10);
-      } 
-      if (keith_phase_count==5){
-          LEFT_TIM->LEFT_TIM_U = CLAMP(crnt  + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_V = CLAMP(0     + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_W = CLAMP(-crnt + pwm_res / 2, 10, pwm_res-10);
-      } */
 
-
-      
+   
     }
 
 #endif 
@@ -272,7 +302,7 @@ volatile int vel = 0;
     uint8_t hall_wl = 0;
 
     int keith_phase_count = 0;
-    int crnt = 20;
+    int crnt = 5;
 
 
     void DMA1_Channel1_IRQHandler() {
@@ -295,8 +325,7 @@ volatile int vel = 0;
       }
 
 
-      if (buzzerTimer % 100 == 0) {
-
+      if (buzzerTimer % 500 == 0) {
         // count to 8 over and over 
         if (keith_phase_count==6){
           keith_phase_count = 0;
