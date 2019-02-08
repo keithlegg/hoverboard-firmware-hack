@@ -187,15 +187,81 @@ NOTES:
     uint8_t hall_wl = 0;
 
     int keith_phase_count = 0;
-    int crnt = 100;
 
+
+    int crnt = 100;  //THIS SETS THE POWER OF THE MOTOR 
+
+    /************/
+    // motor one is LEFT GREEN, BLUE wires 
+
+    void motor_one_forward(){
+          LEFT_TIM->LEFT_TIM_U  = CLAMP(crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V  = CLAMP(-crnt + pwm_res / 2, 10, pwm_res-10);
+    }
+    void motor_one_backward(){
+          LEFT_TIM->LEFT_TIM_U  = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V  = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
+    }
+    void motor_one_off(){
+          LEFT_TIM->LEFT_TIM_U  = CLAMP(0   + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V  = CLAMP(0   + pwm_res / 2, 10, pwm_res-10);
+    }
+
+    /************/
+    // motor two is LEFT AND RIGHT YELLOW wires 
+    void motor_two_forward(){
+
+          LEFT_TIM->LEFT_TIM_W   = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_W = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
+    }
+    void motor_two_backward(){
+          LEFT_TIM->LEFT_TIM_W   = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_W = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
+    }
+    void motor_two_off(){
+          LEFT_TIM->LEFT_TIM_W   = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_W = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+    }
+
+    /************/
+    // motor three is RIGHT GREE, BLUE wires     
+    void motor_three_forward(){
+          RIGHT_TIM->RIGHT_TIM_U  = CLAMP(crnt  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_V  = CLAMP(-crnt + pwm_res / 2, 10, pwm_res-10);
+    }
+    void motor_three_backward(){
+          RIGHT_TIM->RIGHT_TIM_U = CLAMP(-crnt   + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_V = CLAMP(crnt    + pwm_res / 2, 10, pwm_res-10);
+    }
+    void motor_three_off(){
+          RIGHT_TIM->RIGHT_TIM_U  = CLAMP(0   + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_V  = CLAMP(0   + pwm_res / 2, 10, pwm_res-10);
+    }
+
+    /************/
+    void all_motors_pwm_off(){
+          LEFT_TIM->LEFT_TIM_U   = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V   = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W   = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_U = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_V = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_W = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);      
+    }
+
+    void disable_right_motor(){
+        RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE; 
+    }
+    
+    void disable_left_motor(){
+        RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE; 
+    }
+
+    /************/
 
     void DMA1_Channel1_IRQHandler() {
       DMA1->IFCR = DMA_IFCR_CTCIF1;
       // HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
 
-      // DISABLE RIGHT MOTOR FOR TESTING
-      //RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;  
 
 
       buzzerTimer++; //also used for ADC / battery voltage checks
@@ -257,30 +323,22 @@ NOTES:
  
       // TEST OF RUNNING DC MOTORS THROUGH VARIOUS WIRES 
       if (keith_phase_count==0){
-          LEFT_TIM->LEFT_TIM_U   = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_V   = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_W   = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
-          RIGHT_TIM->RIGHT_TIM_U = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
-          RIGHT_TIM->RIGHT_TIM_V = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
-          RIGHT_TIM->RIGHT_TIM_W = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          all_motors_pwm_off();
 
       }
       if (keith_phase_count==1){
-          LEFT_TIM->LEFT_TIM_U  = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
-          RIGHT_TIM->RIGHT_TIM_V = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
+          motor_one_forward();
+          motor_two_forward();
+          motor_three_forward();
       }
       if (keith_phase_count==2){
-          LEFT_TIM->LEFT_TIM_U = CLAMP(0   + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_V = CLAMP(0   + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_W = CLAMP(0   + pwm_res / 2, 10, pwm_res-10);
-          RIGHT_TIM->RIGHT_TIM_U = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
-          RIGHT_TIM->RIGHT_TIM_V = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
-          RIGHT_TIM->RIGHT_TIM_W = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          all_motors_pwm_off();
 
       }    
       if (keith_phase_count==3){
-          LEFT_TIM->LEFT_TIM_U = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
-          RIGHT_TIM->RIGHT_TIM_V = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
+          motor_one_backward();
+          motor_two_backward();
+          motor_three_backward();
       } 
 
    
