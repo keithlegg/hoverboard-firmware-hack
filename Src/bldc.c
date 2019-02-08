@@ -161,18 +161,18 @@ NOTES:
 
     --------------------------------
     #PIN MAPPINGS - 
-        You can run a biderectional Bridge through ANY two pins !!
+        You can run a bidirectional high current H bridge through ANY two pins !!
         a total of 3 independent DC motors!
     
     LEFT :
-        GREEN  - LEFT_TIM_U
-        BLUE   - LEFT_TIM_V 
-        YELLOW - LEFT_TIM_W 
+        GREEN  - LEFT_TIM->LEFT_TIM_U
+        BLUE   - LEFT_TIM->LEFT_TIM_V 
+        YELLOW - LEFT_TIM->LEFT_TIM_W 
 
     RIGHT :
-        GREEN   - RIGHT_TIM_U
-        BLUE    - RIGHT_TIM_V
-        YELLOW  - RIGHT_TIM_W
+        GREEN   - RIGHT_TIM->RIGHT_TIM_U
+        BLUE    - RIGHT_TIM->RIGHT_TIM_V
+        YELLOW  - RIGHT_TIM->RIGHT_TIM_W
 
 */
 
@@ -266,8 +266,8 @@ NOTES:
 
       }
       if (keith_phase_count==1){
-          LEFT_TIM->LEFT_TIM_W  = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
-          RIGHT_TIM->RIGHT_TIM_W = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_U  = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_V = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
       }
       if (keith_phase_count==2){
           LEFT_TIM->LEFT_TIM_U = CLAMP(0   + pwm_res / 2, 10, pwm_res-10);
@@ -279,8 +279,8 @@ NOTES:
 
       }    
       if (keith_phase_count==3){
-          LEFT_TIM->LEFT_TIM_W = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
-          RIGHT_TIM->RIGHT_TIM_W = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_U = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_V = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
       } 
 
    
