@@ -210,7 +210,6 @@ NOTES:
     /************/
     // motor two is LEFT AND RIGHT YELLOW wires 
     void motor_two_forward(){
-
           LEFT_TIM->LEFT_TIM_W   = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
           RIGHT_TIM->RIGHT_TIM_W = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
     }

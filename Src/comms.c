@@ -23,10 +23,10 @@ volatile uint8_t uart_buf[100];
 volatile int16_t ch_buf[8];
 //volatile char char_buf[300];
 
+
 void setScopeChannel(uint8_t ch, int16_t val) {
   ch_buf[ch] = val;
 }
-
 
 
 
@@ -35,10 +35,10 @@ void send_serial_string(char *message){
     #if defined DEBUG_SERIAL_KEITHTEXT && (defined DEBUG_SERIAL_USART2 || defined DEBUG_SERIAL_USART3)
 
         if(UART_DMA_CHANNEL->CNDTR == 0) {
-            UART_DMA_CHANNEL->CCR &= ~DMA_CCR_EN;                 // DMA control register 
-            UART_DMA_CHANNEL->CNDTR = strlen(message);; //NO LARGER than buffer  // DMA remaining bytes register
+            UART_DMA_CHANNEL->CCR &= ~DMA_CCR_EN;         // DMA control register 
+            UART_DMA_CHANNEL->CNDTR = strlen(message);    // NO LARGER than buffer  // DMA remaining bytes register
             UART_DMA_CHANNEL->CMAR  = (uint32_t)message;         
-            UART_DMA_CHANNEL->CCR |= DMA_CCR_EN;                  // DMA control register 
+            UART_DMA_CHANNEL->CCR |= DMA_CCR_EN;          // DMA control register 
         }
     #endif 
 

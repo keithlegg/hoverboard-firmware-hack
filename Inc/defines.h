@@ -22,6 +22,7 @@
 #pragma once
 #include "stm32f1xx_hal.h"
 
+// hall sensor inputs 
 #define LEFT_HALL_U_PIN GPIO_PIN_5
 #define LEFT_HALL_V_PIN GPIO_PIN_6
 #define LEFT_HALL_W_PIN GPIO_PIN_7
@@ -38,34 +39,40 @@
 #define RIGHT_HALL_V_PORT GPIOC
 #define RIGHT_HALL_W_PORT GPIOC
 
+// left motor outputs
 #define LEFT_TIM TIM8
 #define LEFT_TIM_U CCR1
 #define LEFT_TIM_UH_PIN GPIO_PIN_6
 #define LEFT_TIM_UH_PORT GPIOC
 #define LEFT_TIM_UL_PIN GPIO_PIN_7
 #define LEFT_TIM_UL_PORT GPIOA
+
 #define LEFT_TIM_V CCR2
 #define LEFT_TIM_VH_PIN GPIO_PIN_7
 #define LEFT_TIM_VH_PORT GPIOC
 #define LEFT_TIM_VL_PIN GPIO_PIN_0
 #define LEFT_TIM_VL_PORT GPIOB
+
 #define LEFT_TIM_W CCR3
 #define LEFT_TIM_WH_PIN GPIO_PIN_8
 #define LEFT_TIM_WH_PORT GPIOC
 #define LEFT_TIM_WL_PIN GPIO_PIN_1
 #define LEFT_TIM_WL_PORT GPIOB
 
+// right motor outputs
 #define RIGHT_TIM TIM1
 #define RIGHT_TIM_U CCR1
 #define RIGHT_TIM_UH_PIN GPIO_PIN_8
 #define RIGHT_TIM_UH_PORT GPIOA
 #define RIGHT_TIM_UL_PIN GPIO_PIN_13
 #define RIGHT_TIM_UL_PORT GPIOB
+
 #define RIGHT_TIM_V CCR2
 #define RIGHT_TIM_VH_PIN GPIO_PIN_9
 #define RIGHT_TIM_VH_PORT GPIOA
 #define RIGHT_TIM_VL_PIN GPIO_PIN_14
 #define RIGHT_TIM_VL_PORT GPIOB
+
 #define RIGHT_TIM_W CCR3
 #define RIGHT_TIM_WH_PIN GPIO_PIN_10
 #define RIGHT_TIM_WH_PORT GPIOA

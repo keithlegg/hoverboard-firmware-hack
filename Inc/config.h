@@ -59,7 +59,7 @@
 
 #define DEBUG_BAUD       115200       // UART baud rate
 
-#define DEBUG_SERIAL_KEITHTEXT        // keith added this tranismit char string function 
+#define DEBUG_SERIAL_KEITHTEXT        // keith added this transmit char string function 
 
 // #define DEBUG_SERIAL_USART2         // left sensor board cable
 #define DEBUG_SERIAL_USART3           // right sensor board cable, disable if I2C (nunchuck or lcd) is used!
