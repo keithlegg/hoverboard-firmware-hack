@@ -189,18 +189,20 @@ NOTES:
     int keith_phase_count = 0;
 
 
-    int crnt = 100;  //THIS SETS THE POWER OF THE MOTOR 
+    int m1_crnt = 0;  //THIS SETS THE POWER OF MOTOR1 
+    int m2_crnt = 0;  //THIS SETS THE POWER OF MOTOR2 
+    int m3_crnt = 0;  //THIS SETS THE POWER OF MOTOR3 
 
     /************/
     // motor one is LEFT GREEN, BLUE wires 
 
     void motor_one_forward(){
-          LEFT_TIM->LEFT_TIM_U  = CLAMP(crnt  + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_V  = CLAMP(-crnt + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_U  = CLAMP(m1_crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V  = CLAMP(-m1_crnt + pwm_res / 2, 10, pwm_res-10);
     }
     void motor_one_backward(){
-          LEFT_TIM->LEFT_TIM_U  = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
-          LEFT_TIM->LEFT_TIM_V  = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_U  = CLAMP(-m1_crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V  = CLAMP(m1_crnt   + pwm_res / 2, 10, pwm_res-10);
     }
     void motor_one_off(){
           LEFT_TIM->LEFT_TIM_U  = CLAMP(0   + pwm_res / 2, 10, pwm_res-10);
@@ -210,12 +212,12 @@ NOTES:
     /************/
     // motor two is LEFT AND RIGHT YELLOW wires 
     void motor_two_forward(){
-          LEFT_TIM->LEFT_TIM_W   = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
-          RIGHT_TIM->RIGHT_TIM_W = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W   = CLAMP(m2_crnt   + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_W = CLAMP(-m2_crnt  + pwm_res / 2, 10, pwm_res-10);
     }
     void motor_two_backward(){
-          LEFT_TIM->LEFT_TIM_W   = CLAMP(-crnt  + pwm_res / 2, 10, pwm_res-10);
-          RIGHT_TIM->RIGHT_TIM_W = CLAMP(crnt   + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W   = CLAMP(-m2_crnt  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_W = CLAMP(m2_crnt   + pwm_res / 2, 10, pwm_res-10);
     }
     void motor_two_off(){
           LEFT_TIM->LEFT_TIM_W   = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
@@ -225,12 +227,12 @@ NOTES:
     /************/
     // motor three is RIGHT GREE, BLUE wires     
     void motor_three_forward(){
-          RIGHT_TIM->RIGHT_TIM_U  = CLAMP(crnt  + pwm_res / 2, 10, pwm_res-10);
-          RIGHT_TIM->RIGHT_TIM_V  = CLAMP(-crnt + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_U  = CLAMP(m3_crnt  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_V  = CLAMP(-m3_crnt + pwm_res / 2, 10, pwm_res-10);
     }
     void motor_three_backward(){
-          RIGHT_TIM->RIGHT_TIM_U = CLAMP(-crnt   + pwm_res / 2, 10, pwm_res-10);
-          RIGHT_TIM->RIGHT_TIM_V = CLAMP(crnt    + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_U = CLAMP(-m3_crnt   + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_V = CLAMP(m3_crnt    + pwm_res / 2, 10, pwm_res-10);
     }
     void motor_three_off(){
           RIGHT_TIM->RIGHT_TIM_U  = CLAMP(0   + pwm_res / 2, 10, pwm_res-10);
@@ -261,8 +263,6 @@ NOTES:
       DMA1->IFCR = DMA_IFCR_CTCIF1;
       // HAL_GPIO_WritePin(LED_PORT, LED_PIN, 1);
 
-
-
       buzzerTimer++; //also used for ADC / battery voltage checks
 
       //create square wave for buzzer
@@ -276,6 +276,17 @@ NOTES:
 
       if (buzzerTimer % 1000 == 0) {  // because you get float rounding errors if it would run every time
         batteryVoltage = batteryVoltage * 0.99 + ((float)adc_buffer.batt1 * ((float)BAT_CALIB_REAL_VOLTAGE / (float)BAT_CALIB_ADC)) * 0.01;
+      }
+
+
+      if (buzzerTimer % 1000 == 0) { 
+          if (m2_crnt<1000){     
+              m2_crnt = m2_crnt + 1;
+          }
+          if (m2_crnt==1000){
+              m2_crnt = 0;
+          }
+
       }
 
 
