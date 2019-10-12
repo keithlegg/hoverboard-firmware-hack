@@ -189,6 +189,8 @@ NOTES:
     int keith_phase_count = 0;
 
 
+    int global_power = 0;  //test for all three motor power
+
     int m1_crnt = 0;  //THIS SETS THE POWER OF MOTOR1 
     int m2_crnt = 0;  //THIS SETS THE POWER OF MOTOR2 
     int m3_crnt = 0;  //THIS SETS THE POWER OF MOTOR3 
@@ -280,37 +282,41 @@ NOTES:
 
 
       if (buzzerTimer % 1000 == 0) { 
-          if (m2_crnt<1000){     
-              m2_crnt = m2_crnt + 1;
+          if (global_power<1000){     
+              global_power = global_power + 1;
           }
-          if (m2_crnt==1000){
-              m2_crnt = 0;
+          if (global_power==1000){
+              global_power = 0;
           }
+
+          m1_crnt = global_power;
+          m2_crnt = global_power;
+          m3_crnt = global_power;
 
       }
 
 
       if (buzzerTimer % 2000 == 0) {
-        // count to 5 over and over 
-        if (keith_phase_count==4){
-          keith_phase_count = 0;
-        }else{
-            keith_phase_count++;
-        }
-      
+          // count to 5 over and over 
+          if (keith_phase_count==4){
+            keith_phase_count = 0;
+          }else{
+              keith_phase_count++;
+          }
+        
       }
 
 
 
       if(offsetcount < 1000) {  // calibrate ADC offsets
-        offsetcount++;
-        offsetrl1 = (adc_buffer.rl1 + offsetrl1) / 2;
-        offsetrl2 = (adc_buffer.rl2 + offsetrl2) / 2;
-        offsetrr1 = (adc_buffer.rr1 + offsetrr1) / 2;
-        offsetrr2 = (adc_buffer.rr2 + offsetrr2) / 2;
-        offsetdcl = (adc_buffer.dcl + offsetdcl) / 2;
-        offsetdcr = (adc_buffer.dcr + offsetdcr) / 2;
-        return;
+          offsetcount++;
+          offsetrl1 = (adc_buffer.rl1 + offsetrl1) / 2;
+          offsetrl2 = (adc_buffer.rl2 + offsetrl2) / 2;
+          offsetrr1 = (adc_buffer.rr1 + offsetrr1) / 2;
+          offsetrr2 = (adc_buffer.rr2 + offsetrr2) / 2;
+          offsetdcl = (adc_buffer.dcl + offsetdcl) / 2;
+          offsetdcr = (adc_buffer.dcr + offsetdcr) / 2;
+          return;
       }
 
 
@@ -338,8 +344,8 @@ NOTES:
       }
       if (keith_phase_count==1){
           motor_one_forward();
-          motor_two_forward();
-          motor_three_forward();
+          //motor_two_forward();
+          //motor_three_forward();
       }
       if (keith_phase_count==2){
           all_motors_pwm_off();
@@ -347,8 +353,8 @@ NOTES:
       }    
       if (keith_phase_count==3){
           motor_one_backward();
-          motor_two_backward();
-          motor_three_backward();
+          //motor_two_backward();
+          //motor_three_backward();
       } 
 
    
