@@ -52,7 +52,9 @@
 
 //#define KEITH_RUN_NO_HALLSENSORS      // experimental hijacking of the BLDC motor control interrupt
 
-#define KEITH_RUN_DCBRUSHED_TEST      //experiment to run a brushed DC motor with hoverboard hardware
+//#define KEITH_RUN_DCBRUSHED_TEST      //experiment to run a brushed DC motor with hoverboard hardware
+
+#define KEITH_RUN_BIPOLAR_STEP_TEST      //experiment to run a bipolar stepper motor
 
 
 // ############################### SERIAL DEBUG ###############################

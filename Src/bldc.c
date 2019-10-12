@@ -299,7 +299,7 @@ NOTES:
 
       if (buzzerTimer % 2000 == 0) {
           // count to 5 over and over 
-          if (keith_phase_count==4){
+          if (keith_phase_count==12){
             keith_phase_count = 0;
           }else{
               keith_phase_count++;
@@ -345,8 +345,6 @@ NOTES:
       }
       if (keith_phase_count==1){
           motor_one_forward();
-          //motor_two_forward();
-          //motor_three_forward();
       }
       if (keith_phase_count==2){
           all_motors_pwm_off();
@@ -354,8 +352,41 @@ NOTES:
       }    
       if (keith_phase_count==3){
           motor_one_backward();
-          //motor_two_backward();
-          //motor_three_backward();
+      } 
+
+      if (keith_phase_count==4){
+          all_motors_pwm_off();
+
+      }
+      if (keith_phase_count==5){
+          motor_two_forward();
+      }
+
+      if (keith_phase_count==6){
+          all_motors_pwm_off();
+
+      }    
+      if (keith_phase_count==7){
+          motor_two_backward();
+      } 
+
+      if (keith_phase_count==8){
+          all_motors_pwm_off();
+      } 
+
+      if (keith_phase_count==9){
+          motor_three_forward();
+      }
+      if (keith_phase_count==10){
+          all_motors_pwm_off();
+      }
+
+      if (keith_phase_count==11){
+          motor_three_backward();
+      }    
+
+      if (keith_phase_count==12){
+          all_motors_pwm_off();
       } 
 
    
@@ -363,6 +394,223 @@ NOTES:
 
 #endif 
 
+/********************************************************/
+
+
+#ifdef KEITH_RUN_BIPOLAR_STEP_TEST
+
+    // HERE THERE BE DRAGONS!!
+    // test to run a bipolar stepper motor 
+    //derived from the 3 DC motor test example above - only uses 2 motors/coils
+    // two of these control PCBs could drive 3 steppers! 
+
+
+    int DIRECTION = 0;
+
+    // //determine next position based on hall sensors
+    // uint8_t hall_ul = 0;
+    // uint8_t hall_vl = 0;
+    // uint8_t hall_wl = 0;
+
+    int keith_phase_count = 0;
+
+
+    int m1_crnt = 600;  //THIS SETS THE POWER OF MOTOR1 
+    int m2_crnt = 600;  //THIS SETS THE POWER OF MOTOR2 
+    int m3_crnt = 600;  //THIS SETS THE POWER OF MOTOR3 
+
+    /************/
+    // motor one is LEFT GREEN, BLUE wires 
+
+    void coil_one_forward(){
+          LEFT_TIM->LEFT_TIM_U  = CLAMP(m1_crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V  = CLAMP(-m1_crnt + pwm_res / 2, 10, pwm_res-10);
+    }
+    void coil_one_backward(){
+          LEFT_TIM->LEFT_TIM_U  = CLAMP(-m1_crnt  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V  = CLAMP(m1_crnt   + pwm_res / 2, 10, pwm_res-10);
+    }
+    void coil_one_off(){
+          LEFT_TIM->LEFT_TIM_U  = CLAMP(0   + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V  = CLAMP(0   + pwm_res / 2, 10, pwm_res-10);
+    }
+
+    /************/
+    // motor two is LEFT AND RIGHT YELLOW wires 
+    void coil_two_forward(){
+          LEFT_TIM->LEFT_TIM_W   = CLAMP(m2_crnt   + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_W = CLAMP(-m2_crnt  + pwm_res / 2, 10, pwm_res-10);
+    }
+    void coil_two_backward(){
+          LEFT_TIM->LEFT_TIM_W   = CLAMP(-m2_crnt  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_W = CLAMP(m2_crnt   + pwm_res / 2, 10, pwm_res-10);
+    }
+    void coil_two_off(){
+          LEFT_TIM->LEFT_TIM_W   = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_W = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+    }
+
+
+    /************/
+    // motor three is RIGHT GREE, BLUE wires     
+    void motor_three_forward(){
+          RIGHT_TIM->RIGHT_TIM_U  = CLAMP(m3_crnt  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_V  = CLAMP(-m3_crnt + pwm_res / 2, 10, pwm_res-10);
+    }
+    void motor_three_backward(){
+          RIGHT_TIM->RIGHT_TIM_U = CLAMP(-m3_crnt   + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_V = CLAMP(m3_crnt    + pwm_res / 2, 10, pwm_res-10);
+    }
+    void motor_three_off(){
+          RIGHT_TIM->RIGHT_TIM_U  = CLAMP(0   + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_V  = CLAMP(0   + pwm_res / 2, 10, pwm_res-10);
+    }
+
+    /************/
+    void all_motors_pwm_off(){
+          LEFT_TIM->LEFT_TIM_U   = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_V   = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          LEFT_TIM->LEFT_TIM_W   = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_U = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_V = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);
+          RIGHT_TIM->RIGHT_TIM_W = CLAMP(0  + pwm_res / 2, 10, pwm_res-10);      
+    }
+
+    void disable_right_motor(){
+        // right "motor" is actually 3 "drive channels", or 1.5 motors
+        RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE; 
+    }
+    
+    void disable_left_motor(){
+        // left "motor" is actually 3 "drive channels", or 1.5 motors      
+        RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE; 
+    }
+
+
+
+    /************/
+
+    void DMA1_Channel1_IRQHandler() 
+    {
+        DMA1->IFCR = DMA_IFCR_CTCIF1;
+
+        buzzerTimer++; //also used for ADC / battery voltage checks
+
+        //create square wave for buzzer
+        if (buzzerFreq != 0 && (buzzerTimer / 5000) % (buzzerPattern + 1) == 0) {
+          if (buzzerTimer % buzzerFreq == 0) {
+            HAL_GPIO_TogglePin(BUZZER_PORT, BUZZER_PIN);
+          }
+        } else {
+            HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, 0);
+        }
+
+        if (buzzerTimer % 1000 == 0) {  // because you get float rounding errors if it would run every time
+          batteryVoltage = batteryVoltage * 0.99 + ((float)adc_buffer.batt1 * ((float)BAT_CALIB_REAL_VOLTAGE / (float)BAT_CALIB_ADC)) * 0.01;
+        }
+
+
+    /************/
+
+        if (buzzerTimer % 100000 == 0) {
+            if (DIRECTION==0){
+              DIRECTION = 1;
+              motor_three_forward();
+            }else{
+                DIRECTION = 0;
+                motor_three_backward();                
+            }
+          
+        }
+
+        if (buzzerTimer % 100 == 0) {
+            // count to 5 over and over 
+            if (keith_phase_count==4){
+              keith_phase_count = 0;
+            }else{
+                keith_phase_count++;
+            }
+          
+        }
+
+        if(DIRECTION==0){
+        
+            if(keith_phase_count==0){
+                coil_one_forward();
+                coil_two_forward();
+            }
+
+            if(keith_phase_count==1){
+                coil_one_backward();
+                coil_two_forward();
+            }
+
+            if(keith_phase_count==2){
+                coil_one_backward();
+                coil_two_backward();
+            }
+
+            if(keith_phase_count==3){
+                coil_one_forward();
+                coil_two_backward();
+            }
+
+        }
+        
+        if(DIRECTION==1){
+
+            if(keith_phase_count==0){
+                coil_one_forward();
+                coil_two_backward();
+            }
+
+            if(keith_phase_count==1){
+                coil_one_backward();
+                coil_two_backward();
+            }
+
+            if(keith_phase_count==2){
+                coil_one_backward();
+                coil_two_forward();
+            }
+
+            if(keith_phase_count==3){
+                coil_one_forward();
+                coil_two_forward();
+            }        
+
+        }
+
+
+        if(offsetcount < 1000) {  // calibrate ADC offsets
+            offsetcount++;
+            offsetrl1 = (adc_buffer.rl1 + offsetrl1) / 2;
+            offsetrl2 = (adc_buffer.rl2 + offsetrl2) / 2;
+            offsetrr1 = (adc_buffer.rr1 + offsetrr1) / 2;
+            offsetrr2 = (adc_buffer.rr2 + offsetrr2) / 2;
+            offsetdcl = (adc_buffer.dcl + offsetdcl) / 2;
+            offsetdcr = (adc_buffer.dcr + offsetdcr) / 2;
+            return;
+        }
+
+
+
+        //disable left PWM when current limit is reached (current chopping)
+        if(ABS((adc_buffer.dcl - offsetdcl) * MOTOR_AMP_CONV_DC_AMP) > DC_CUR_LIMIT || timeout > TIMEOUT || enable == 0) {
+          LEFT_TIM->BDTR &= ~TIM_BDTR_MOE;
+        } else {
+          LEFT_TIM->BDTR |= TIM_BDTR_MOE;
+        }
+        //disable right PWM when current limit is reached (current chopping)      
+        if(ABS((adc_buffer.dcr - offsetdcr) * MOTOR_AMP_CONV_DC_AMP)  > DC_CUR_LIMIT || timeout > TIMEOUT || enable == 0) {
+          RIGHT_TIM->BDTR &= ~TIM_BDTR_MOE;
+        } else {
+          RIGHT_TIM->BDTR |= TIM_BDTR_MOE;
+        }
+
+    }
+
+#endif 
 
 /********************************************************/
 
